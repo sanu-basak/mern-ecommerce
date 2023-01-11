@@ -3,6 +3,8 @@ const app = express();
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const authJwt = require('./helpers/jwt');
+const errorHandler = require('./helpers/exceptionHandler');
 
 require('dotenv/config');
 
@@ -14,13 +16,18 @@ app.use(express.json()) //Parsing json content type
 app.use(morgan('tiny')) //for logging api logs
 app.use(cors());
 app.use('*',cors());
+app.use(authJwt());
+// app.use(errorHandler);
 
 const productRouter = require('./routers/product');
 const categoryRouter = require('./routers/category');
+const userRouter = require('./routers/user');
+
 
 //Routes
 app.use(`${api}/products`, productRouter);
 app.use(`${api}/category`,categoryRouter);
+app.use(`${api}/user`,userRouter);
 
 mongoose.set('strictQuery', true);
 

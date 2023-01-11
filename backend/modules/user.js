@@ -1,3 +1,4 @@
+const { default: mongoose } = require('mongoose');
 const moongose = require('mongoose');
 const userSchema = moongose.Schema({
     name : {
@@ -50,4 +51,7 @@ userSchema.virtual('id').get(function(){
 userSchema.set('toJSON',{
     virtuals : true,
 });
+
+exports.User = mongoose.model('User',userSchema);
+exports.userSchema = userSchema;
 
