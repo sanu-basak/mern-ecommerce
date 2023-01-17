@@ -17,19 +17,19 @@ app.use(morgan('tiny')) //for logging api logs
 app.use(cors());
 app.use('*', cors());
 app.use(authJwt());
-// app.use(errorHandler);
+app.use(errorHandler);
 
 const productRouter = require('./routers/product');
 const categoryRouter = require('./routers/category');
 const userRouter = require('./routers/user');
 const orderRouter = require('./routers/order');
 
-
 //Routes
 app.use(`${api}/products`, productRouter);
 app.use(`${api}/category`, categoryRouter);
 app.use(`${api}/user`, userRouter);
 app.use(`${api}/order`, orderRouter);
+app.get('/', (req, res) => res.send('eShop Marketplace'));
 
 mongoose.set('strictQuery', true);
 

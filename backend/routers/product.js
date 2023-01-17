@@ -1,21 +1,21 @@
 const express = require('express');
-const router =  express.Router();
+const router = express.Router();
 
-const {Product} = require('../modules/product');
+const { Product } = require('../modules/product');
 
 //Get Product List
-router.get('/', async(req,res)=>{
+router.get('/', async (req, res) => {
     let filter = {};
 
-    if(req.query.categories){
-        filter = { Category : req.query.categories.split(',')}
+    if (req.query.categories) {
+        filter = { Category: req.query.categories.split(',') }
     }
     const product = await Product.find(filter).populate('Category');
 
-    if(!product){
+    if (!product) {
         res.status(500).json({
-            success : false,
-            message : 'Something went wrong'
+            success: false,
+            message: 'Something went wrong'
         })
     }
 
@@ -23,52 +23,53 @@ router.get('/', async(req,res)=>{
 });
 
 //Create new product
-router.post('/',(req,res) => {
-    
+router.post('/', (req, res) => {
+
     const product = new Product({
-        name : req.body.name,
-        image : req.body.image,
-        countInStock : req.body.countInStock,
-        Category : req.body.category,
+        name: req.body.name,
+        image: req.body.image,
+        countInStock: req.body.countInStock,
+        Category: req.body.category,
         description: req.body.description,
-        isFeatured: req.body.isFeatured
+        isFeatured: req.body.isFeatured,
+        price: req.body.price
     })
 
     product.save().then((productCreated) => {
         res.status(201).json(productCreated);
     }).catch((err) => {
         res.status(500).json({
-            error : err,
-            success : false
+            error: err,
+            success: false
         })
     })
-    
+
 });
 
-router.get('/get/count',async (req,res) => {
+router.get('/get/count', async (req, res) => {
     const productCount = await Product.countDocuments();
-    if(!productCount){
+    if (!productCount) {
         res.status(500).json({
-            success : false,
-            message : 'something went wrong'
+            success: false,
+            message: 'something went wrong'
         });
     }
 
     res.status(200).send({
-        count : productCount
+        count: productCount
     });
 });
 
-router.get(`/get/feature/:count`,async (req,res) => {
+router.get(`/get/feature/:count`, async (req, res) => {
     const count = req.params.count ? req.params.count : 0;
     const featureProduct = await Product.find({
-        isFeatured : true
+        isFeatured: true
     }).limit(count);
 
-    if(!featureProduct){
+    if (!featureProduct) {
         res.status(500).json({
-            success : false,
-            message : 'Something went wrong'
+            success: false,
+            message: 'Something went wrong'
         });
     }
 

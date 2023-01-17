@@ -1,215 +1,214 @@
-const {User} = require('../modules/user');
+const { User } = require('../modules/user');
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-
-router.get('/', async (req,res) => {
+router.get('/', async (req, res) => {
     const userList = await User.find().select('-passwordHash');
-    
-    if(!userList){
+
+    if (!userList) {
         res.status(500).json({
-            success : false,
-            message : 'User Data not found'
+            success: false,
+            message: 'User Data not found'
         });
     }
 
     res.status(200).json({
-        success : true,
-        data : userList
+        success: true,
+        data: userList
     });
 });
 
-router.get('/:id', async (req,res) => {
+router.get('/:id', async (req, res) => {
     const userList = await User.findById(req.params.id).select('-passwordHash');
-    
-    if(!userList){
+
+    if (!userList) {
         res.status(500).json({
-            success : false,
-            message : 'User Data not found'
+            success: false,
+            message: 'User Data not found'
         });
     }
 
     res.status(200).json({
-        success : true,
-        data : userList
+        success: true,
+        data: userList
     });
 });
 
-router.post('/', async (req,res) => {
+router.post('/', async (req, res) => {
     let user = new User({
-        name : req.body.name,
+        name: req.body.name,
         email: req.body.email,
-        passwordHash : bcrypt.hashSync(req.body.password,10),
+        passwordHash: bcrypt.hashSync(req.body.password, 10),
         phone: req.body.phone,
-        isAdmin : req.body.isAdmin,
-        street : req.body.street,
-        apartment : req.body.apartment,
-        zip : req.body.zip,
-        city : req.body.city,
-        country : req.body.country
+        isAdmin: req.body.isAdmin,
+        street: req.body.street,
+        apartment: req.body.apartment,
+        zip: req.body.zip,
+        city: req.body.city,
+        country: req.body.country
     });
 
     user = await user.save();
 
-    if(!user){
+    if (!user) {
         return res.status(400).json({
-            success : false,
-            message : 'User not created'
+            success: false,
+            message: 'User not created'
         });
     }
 
     res.status(201).json({
-        success : true,
-        data : user
+        success: true,
+        data: user
     });
 
 });
 
-router.put('/:id', async (req,res) => {
+router.put('/:id', async (req, res) => {
     const userExist = await User.findById(req.params.id);
     let newPassword;
-    if(req.body.password){
-        newPassword = bcrypt.hashSync(req.body.password,10);
-    }else{
+    if (req.body.password) {
+        newPassword = bcrypt.hashSync(req.body.password, 10);
+    } else {
         newPassword = userExist.passwordHash;
     }
-    const user = await  User.findByIdAndUpdate(req.params.id,
+    const user = await User.findByIdAndUpdate(req.params.id,
         {
-            name : req.body.name,
+            name: req.body.name,
             email: req.body.email,
-            passwordHash : newPassword,
+            passwordHash: newPassword,
             phone: req.body.phone,
-            isAdmin : req.body.isAdmin,
-            street : req.body.street,
-            apartment : req.body.apartment,
-            zip : req.body.zip,
-            city : req.body.city,
-            country : req.body.country
+            isAdmin: req.body.isAdmin,
+            street: req.body.street,
+            apartment: req.body.apartment,
+            zip: req.body.zip,
+            city: req.body.city,
+            country: req.body.country
         },
         {
-            new:true
+            new: true
         }
     );
 
-    if(!user){
+    if (!user) {
         return res.status(400).json({
-            success : false,
-            message : 'User not created'
+            success: false,
+            message: 'User not created'
         });
     }
 
     res.status(201).json({
-        success : true,
-        data : user
+        success: true,
+        data: user
     });
 
 });
 
-router.post('/register', async (req,res) => {
+router.post('/register', async (req, res) => {
     let user = new User({
-        name : req.body.name,
+        name: req.body.name,
         email: req.body.email,
-        passwordHash : bcrypt.hashSync(req.body.password,10),
+        passwordHash: bcrypt.hashSync(req.body.password, 10),
         phone: req.body.phone,
-        isAdmin : req.body.isAdmin,
-        street : req.body.street,
-        apartment : req.body.apartment,
-        zip : req.body.zip,
-        city : req.body.city,
-        country : req.body.country
+        isAdmin: req.body.isAdmin,
+        street: req.body.street,
+        apartment: req.body.apartment,
+        zip: req.body.zip,
+        city: req.body.city,
+        country: req.body.country
     });
 
     user = await user.save();
 
-    if(!user){
+    if (!user) {
         return res.status(400).json({
-            success : false,
-            message : 'User not created'
+            success: false,
+            message: 'User not created'
         });
     }
 
     res.status(201).json({
-        success : true,
-        data : user
+        success: true,
+        data: user
     });
 
 });
 
-router.post('/login', async (req,res) => {
+router.post('/login', async (req, res) => {
     const user = await User.findOne({
-        email : req.body.email
+        email: req.body.email
     })
 
     const secret = process.env.SECRET;
 
-    if(!user){
+    if (!user) {
         res.status(400).json({
-            success : true,
-            message : "User not found"
+            success: true,
+            message: "User not found"
         });
     }
 
-    if(user && bcrypt.compareSync(req.body.password,user.passwordHash)){
+    if (user && bcrypt.compareSync(req.body.password, user.passwordHash)) {
         const token = jwt.sign({
-            userId : user.id,
-            isAdmin : user.isAdmin
+            userId: user.id,
+            isAdmin: user.isAdmin
         },
-        secret,
-        {
-            expiresIn:'1d'
-        });
+            secret,
+            {
+                expiresIn: '1d'
+            });
 
         res.status(200).send({
-            user:user.email,token:token
+            user: user.email, token: token
         });
 
-    }else{
+    } else {
         res.status(401).json({
-            success : false,
-            message:"user email not found"
+            success: false,
+            message: "user email not found"
         });
     }
 
 
 });
 
-router.delete('/:id',async (req,res) => {
+router.delete('/:id', async (req, res) => {
     User.findByIdAndRemove(req.params.id).then(user => {
-        if(user){
+        if (user) {
             return res.status(200).json({
-                success : true,
-                message : "User is deleted successfully"
+                success: true,
+                message: "User is deleted successfully"
             });
-        }else{
+        } else {
             return res.status(401).json({
-                success : false,
-                message : "User not found"
+                success: false,
+                message: "User not found"
             });
         }
     }).catch(err => {
         return res.status(500).json({
-            success : false,
-            error : err
+            success: false,
+            error: err
         });
     });
 
 });
 
-router.get('/get/count', async (req,res) => {
+router.get('/get/count', async (req, res) => {
     const userCount = await User.countDocuments()
 
-    if(!userCount){
+    if (!userCount) {
         res.status(500).json({
-            success : false,
-            message : 'User Data not found'
+            success: false,
+            message: 'User Data not found'
         });
     }
 
     res.status(200).json({
-        success : true,
-        count : userCount
+        success: true,
+        count: userCount
     });
 });
 

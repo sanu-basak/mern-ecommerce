@@ -6,12 +6,12 @@ function authJwt() {
 
     return expressjwt({
         secret,
-        algorithms : ['HS256'],
-        isRevoked : isRevoked
+        algorithms: ['HS256'],
+        isRevoked: isRevoked
     }).unless({
         path: [
-            {url: /\/api\/v1\/products(.*)/ , methods: ['GET', 'OPTIONS'] },
-            {url: /\/api\/v1\/categories(.*)/ , methods: ['GET', 'OPTIONS'] },
+            { url: /\/api\/v1\/products(.*)/, methods: ['GET', 'OPTIONS'] },
+            { url: /\/api\/v1\/categories(.*)/, methods: ['GET', 'OPTIONS'] },
             `${api}/user/login`,
             `${api}/user/register`,
         ]
@@ -19,9 +19,9 @@ function authJwt() {
 }
 
 async function isRevoked(req, payload) {
-    console.log(payload);
+    // console.log(payload);
 
-    if(payload.isAdmin) {
+    if (payload.isAdmin) {
         return true;
     }
 
