@@ -1,17 +1,17 @@
 const express = require('express');
 const router = express.Router();
 
-const {Category} = require('../modules/category');
+const { Category } = require('../models/category');
 
 //Select all category
-router.get('/',async(req,res) => {
+router.get('/', async (req, res) => {
 
     const category = await Category.find();
 
-    if(!category){
+    if (!category) {
         res.status(500).json({
-            success : false,
-            message : 'Something went wrong'
+            success: false,
+            message: 'Something went wrong'
         });
     }
 
@@ -20,11 +20,11 @@ router.get('/',async(req,res) => {
 });
 
 //Create Catgory
-router.post('/',(req,res) => {
+router.post('/', (req, res) => {
     const category = new Category({
-        name : req.body.name,
-        icon : req.body.icon,
-        color : req.body.color
+        name: req.body.name,
+        icon: req.body.icon,
+        color: req.body.color
     })
 
     category.save().then((categoryCreated) => {
@@ -35,59 +35,60 @@ router.post('/',(req,res) => {
 })
 
 //Delete Category
-router.delete('/:id',(req,res) => {
+router.delete('/:id', (req, res) => {
     Category.findByIdAndDelete(req.params.id).then((category) => {
-        if(!category){
+        if (!category) {
             res.status(404).json({
-                success:false,
-                message : 'category not found'});
-        }else{
+                success: false,
+                message: 'category not found'
+            });
+        } else {
             res.status(200).json({
-                success : false,
-                message : 'Category successfully deleted'
+                success: false,
+                message: 'Category successfully deleted'
             });
         }
 
     }).catch((err) => {
-          res.status(500).send(err);
+        res.status(500).send(err);
     });
 });
 
 //Select category by id
-router.get('/:id', async (req,res) => {
+router.get('/:id', async (req, res) => {
     const category = await Category.findById(req.params.id);
-    if(!category){
+    if (!category) {
         res.status(404).json({
-            success : false,
-            message : "Category not found"
+            success: false,
+            message: "Category not found"
         });
-    }else{
+    } else {
         res.status(200).send(category);
     }
-}) 
+})
 
 //Update Catgeory
-router.put('/:id',async(req,res) => {
-     const category = await Category.findByIdAndUpdate(
+router.put('/:id', async (req, res) => {
+    const category = await Category.findByIdAndUpdate(
         req.params.id,
         {
-            name : req.body.name,
-            icon : req.body.icon,
-            color : req.body.color
+            name: req.body.name,
+            icon: req.body.icon,
+            color: req.body.color
         },
         {
-            new:true
+            new: true
         }
-     )
+    )
 
-     if(!category){
+    if (!category) {
         res.status(500).json({
-            success : false,
-            message : 'Category not found'
+            success: false,
+            message: 'Category not found'
         });
-     }
+    }
 
-     res.status(200).send(category);
+    res.status(200).send(category);
 });
 
 module.exports = router;

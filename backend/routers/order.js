@@ -1,5 +1,5 @@
-const { Order } = require('../modules/order');
-const { OrderItem } = require('../modules/order-item');
+const { Order } = require('../models/order');
+const { OrderItem } = require('../models/order-item');
 const express = require('express');
 const router = express.Router();
 
