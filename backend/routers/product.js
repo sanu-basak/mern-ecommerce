@@ -1,7 +1,34 @@
 const express = require('express');
 const router = express.Router();
-
 const { Product } = require('../models/product');
+const multer = require('multer');
+const { default: mongoose } = require('mongoose');
+
+const FILE_TYPE_MAP = {
+    'image/png': 'png',
+    'image/jpg': 'jpg',
+    'image/jpeg': 'jpg'
+}
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const isValid = FILE_TYPE_MAP[file.mimetype];
+        let uploadError = new Error('invalid image type');
+
+        if (isValid) {
+            uploadError = null;
+        }
+
+        cb(uploadError, 'public/uploads')
+    },
+    filename: function (req, file, cb) {
+        const fileName = file.originalname.split(' ').join('-');
+        const extension = FILE_TYPE_MAP[file.mimetype];
+        cb(null, `${fileName}-${Date.now()}.${extension}`);
+    }
+})
+
+const upload = multer({ storage: storage })
 
 //Get Product List
 router.get('/', async (req, res) => {
@@ -23,11 +50,19 @@ router.get('/', async (req, res) => {
 });
 
 //Create new product
-router.post('/', (req, res) => {
+router.post('/', upload.single('image'), (req, res) => {
 
+    const file = req.file;
+    if (!file)
+        return res.status(400).json({ message: 'No image is found' });
+
+    const fileName = file.filename;
+    const basePath = `${req.protocol}://${req.get('Host')}/public/uploads/`;
+
+    console.log(basePath);
     const product = new Product({
         name: req.body.name,
-        image: req.body.image,
+        image: `${basePath}${fileName}`,
         countInStock: req.body.countInStock,
         Category: req.body.category,
         description: req.body.description,
@@ -43,6 +78,49 @@ router.post('/', (req, res) => {
             success: false
         })
     })
+
+});
+
+
+//Update Product details
+router.put('/:id', upload.single('image'), async (req, res) => {
+
+    if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: 'Product id invalid' });
+    }
+
+    const category = await Category.findById(req.body.category);
+    if (!category) {
+        return res.status(400).json({ message: 'Product category not found' });
+    }
+
+    const product = await Product.findById(req.body.id);
+
+    const file = req.file;
+    if (!file)
+        return res.status(400).json({ message: 'No image is found' });
+
+    let imagepath;
+
+    const fileName = file.filename;
+    const basePath = `${req.protocol}://${req.get('Host')}/public/uploads/`;
+
+    if (req.body.image) {
+        imagepath = `${basePath}${fileName}`;
+    } else {
+        imagepath = product.image;
+    }
+
+    const productUpdate = await Product.findByIdAndUpdate(req.params.id, {
+        name: req.body.name,
+        image: imagepath
+    }, { new: true });
+
+    if (!productUpdate) {
+        return res.status(400).json({ message: 'Product not found' });
+    };
+
+    res.status(200).json(productUpdate);
 
 });
 
